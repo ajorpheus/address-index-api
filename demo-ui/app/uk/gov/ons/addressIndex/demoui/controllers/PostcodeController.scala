@@ -82,6 +82,7 @@ class PostcodeController @Inject()(
     val addressText = optAddress.getOrElse("")
     val optFilter: Option[String] = Try(request.body.asFormUrlEncoded.get("filter").mkString).toOption
     val filterText = optFilter.getOrElse("")
+    val historical  : Boolean = Try(request.body.asFormUrlEncoded.get("historical").mkString.toBoolean).getOrElse(false)
     if (addressText.trim.isEmpty) {
       logger info "Postcode Match with Empty input address"
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.postcodeMatch(
@@ -99,7 +100,7 @@ class PostcodeController @Inject()(
       )
     } else {
       Future.successful(
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.PostcodeController.doMatchWithInput(addressText, filterText, Some(1)))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.PostcodeController.doMatchWithInput(addressText, filterText, Some(1), historical))
       )
     }
   }
@@ -110,7 +111,7 @@ class PostcodeController @Inject()(
     * @param postcode the postcode
     * @return result to view
     */
-  def doMatchWithInput(postcode: String, filter: String, page: Option[Int]): Action[AnyContent] = Action.async { implicit request =>
+  def doMatchWithInput(postcode: String, filter: String, page: Option[Int], historical: Boolean): Action[AnyContent] = Action.async { implicit request =>
 
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
@@ -141,6 +142,7 @@ class PostcodeController @Inject()(
         apiClient.postcodeQuery {
           AddressIndexPostcodeRequest(
             postcode = addressText,
+            historical = historical,
             filter = filterText,
             limit = limit,
             offset = offset,

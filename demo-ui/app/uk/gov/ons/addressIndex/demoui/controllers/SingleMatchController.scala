@@ -85,6 +85,7 @@ class SingleMatchController @Inject()(
     val optAddress: Option[String] = Try(request.body.asFormUrlEncoded.get("address").mkString).toOption
     val addressText = optAddress.getOrElse("")
     val optFilter: Option[String] = Try(request.body.asFormUrlEncoded.get("filter").mkString).toOption
+    val historical  : Boolean = Try(request.body.asFormUrlEncoded.get("historical").mkString.toBoolean).getOrElse(false)
     val filterText = optFilter.getOrElse("")
     val rangeOpt = request.getQueryString("rangekm")
     val latOpt = request.getQueryString("lat")
@@ -109,11 +110,11 @@ class SingleMatchController @Inject()(
       )
     } else if (Try(addressText.toLong).isSuccess) {
       Future.successful(
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.SingleMatchController.doGetUprn(addressText, Some(filterText)))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.SingleMatchController.doGetUprn(addressText, Some(filterText), historical))
       )
     } else {
       Future.successful(
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.SingleMatchController.doMatchWithInput(addressText, Some(filterText), Some(1), rangeOpt, latOpt, lonOpt))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.SingleMatchController.doMatchWithInput(addressText, Some(filterText), Some(1), rangeOpt, latOpt, lonOpt, historical))
       )
     }
   }
@@ -124,7 +125,7 @@ class SingleMatchController @Inject()(
     * @param input
     * @return result to view
     */
-  def doMatchWithInput(input: String, filter: Option[String] = None, page: Option[Int], rangekm: Option[String] = None, lat: Option[String] = None, lon: Option[String] = None): Action[AnyContent] = Action.async { implicit request =>
+  def doMatchWithInput(input: String, filter: Option[String] = None, page: Option[Int], rangekm: Option[String] = None, lat: Option[String] = None, lon: Option[String] = None, historical: Boolean): Action[AnyContent] = Action.async { implicit request =>
 
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
@@ -161,6 +162,7 @@ class SingleMatchController @Inject()(
         apiClient.addressQuery(
           AddressIndexSearchRequest(
             input = addressText,
+            historical = historical,
             limit = limit,
             offset = offset,
             filter = filterText,
@@ -209,7 +211,7 @@ class SingleMatchController @Inject()(
     * @param input
     * @return result to view
     */
-  def doGetUprn(input : String, filter: Option[String]) : Action[AnyContent] = Action.async { implicit request =>
+  def doGetUprn(input : String, filter: Option[String], historical: Boolean) : Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>val addressText = StringUtils.stripAccents(input)
       val filterText = StringUtils.stripAccents(filter.getOrElse(""))
@@ -237,6 +239,7 @@ class SingleMatchController @Inject()(
       apiClient.uprnQuery(
         AddressIndexUPRNRequest(
           uprn = numericUPRN,
+          historical = historical,
           id = UUID.randomUUID,
             apiKey = apiKey
         )
@@ -276,7 +279,7 @@ class SingleMatchController @Inject()(
     * @param input
     * @return result to view
     */
-  def doGetResult(input : String) : Action[AnyContent] = Action.async { implicit request =>
+  def doGetResult(input : String, historical: Boolean) : Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>val addressText = StringUtils.stripAccents(input)
       val filterText = ""
@@ -305,7 +308,8 @@ class SingleMatchController @Inject()(
           AddressIndexUPRNRequest(
             uprn = numericUPRN,
             id = UUID.randomUUID,
-            apiKey = apiKey
+            apiKey = apiKey,
+            historical = historical
           )
         ) map { resp: AddressByUprnResponseContainer =>
           val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText))

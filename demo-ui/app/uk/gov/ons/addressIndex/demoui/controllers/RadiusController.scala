@@ -91,6 +91,7 @@ class RadiusController @Inject()(
     val latText = optLat.getOrElse("")
     val optLon: Option[String] = Try(request.body.asFormUrlEncoded.get("lon").mkString).toOption
     val lonText = optLon.getOrElse("")
+    val historical  : Boolean = Try(request.body.asFormUrlEncoded.get("historical").mkString.toBoolean).getOrElse(false)
     if (addressText.trim.isEmpty) {
       logger info "Radius Match with Empty search term"
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.radiusMatch(
@@ -111,7 +112,7 @@ class RadiusController @Inject()(
       )
     } else {
       Future.successful(
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.RadiusController.doMatchWithInput(addressText, Some(filterText), Some(rangeText), Some(latText), Some(lonText), Some(1)))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.RadiusController.doMatchWithInput(addressText, Some(filterText), Some(rangeText), Some(latText), Some(lonText), Some(1), historical))
       )
     }
   }
@@ -122,7 +123,7 @@ class RadiusController @Inject()(
     * @param input the term
     * @return result to view
     */
-  def doMatchWithInput(input: String, filter: Option[String] = None, rangekm: Option[String] = None, lat: Option[String] = None, lon: Option[String] = None, page: Option[Int]): Action[AnyContent] = Action.async { implicit request =>
+  def doMatchWithInput(input: String, filter: Option[String] = None, rangekm: Option[String] = None, lat: Option[String] = None, lon: Option[String] = None, page: Option[Int], historical: Boolean): Action[AnyContent] = Action.async { implicit request =>
 
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
@@ -159,6 +160,7 @@ class RadiusController @Inject()(
         apiClient.addressQuery(
           AddressIndexSearchRequest(
             input = addressText,
+            historical = historical,
             limit = limit,
             offset = offset,
             filter = filterText,

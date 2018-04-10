@@ -7,9 +7,9 @@ import play.api.libs.json._
   */
 
 case class SingleSearchForm(
- address: String,
-                           filter: String
-)
+                             address: String,
+                             filter: String
+                           )
 
 object SingleSearchForm {
   val jsonFmt = Json.format[SingleSearchForm]

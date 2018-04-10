@@ -91,6 +91,7 @@ class ClericalToolController @Inject()(
   def doMatch(): Action[AnyContent] = Action { implicit request =>
     val addressText = Try(request.body.asFormUrlEncoded.get("address").mkString).getOrElse("")
     val filterText = Try(request.body.asFormUrlEncoded.get("filter").mkString).getOrElse("")
+    val historical  : Boolean = Try(request.body.asFormUrlEncoded.get("historical").mkString.toBoolean).getOrElse(false)
     if (addressText.trim.isEmpty) {
       logger.info("Clerical Tool with Empty input address")
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.clericalTool(
@@ -116,9 +117,9 @@ class ClericalToolController @Inject()(
       )
         Ok(viewToRender)
     } else if (Try(addressText.toLong).isSuccess) {
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.doUprnWithInput(addressText.toLong, filterText))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.doUprnWithInput(addressText.toLong, filterText, historical))
     } else {
-        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.doMatchWithInput(addressText, filterText, Some(1), Some(-1)))
+        Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.doMatchWithInput(addressText, filterText, Some(1), Some(-1), historical))
     }
   }
 
@@ -128,7 +129,7 @@ class ClericalToolController @Inject()(
     * @param input
     * @return result to view
     */
-  def doMatchWithInput(input: String, filter: String, page: Option[Int], expand: Option[Int]): Action[AnyContent] = Action.async { implicit request =>
+  def doMatchWithInput(input: String, filter: String, page: Option[Int], expand: Option[Int], historical: Boolean): Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
  //     generateClericalView(input, page, expand, messagesApi("clerical.sfatext"), uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.doMatch, "clerical", messagesApi("clericalsearchform.placeholder"), apiKey)
@@ -172,6 +173,7 @@ class ClericalToolController @Inject()(
           AddressIndexSearchRequest(
             input = addressText,
             filter = filterText,
+            historical = historical,
             limit = limit,
             rangekm = "",
             lat = "50.705948",
@@ -300,13 +302,14 @@ class ClericalToolController @Inject()(
     * @param input
     * @return result to view
     */
-  def doUprnWithInput(input : Long, filter: String) : Action[AnyContent] = Action.async { implicit request =>
+  def doUprnWithInput(input : Long, filter: String, historical: Boolean) : Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
    //   logger info("UPRN with supplied input address " + input)
       apiClient.uprnQuery(
         AddressIndexUPRNRequest(
           uprn = input,
+          historical = historical,
           id = UUID.randomUUID,
           apiKey = apiKey
         )
@@ -426,11 +429,12 @@ class ClericalToolController @Inject()(
 
     val input: String = Try(request.body.asFormUrlEncoded.get("address").mkString).getOrElse("")
     val filter: String = Try(request.body.asFormUrlEncoded.get("filter").mkString).getOrElse("")
-    Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.showQueryWithInput(input, filter, Some(1), Some(-1)))
+    val historical  : Boolean = Try(request.body.asFormUrlEncoded.get("historical").mkString.toBoolean).getOrElse(false)
 
+    Redirect(uk.gov.ons.addressIndex.demoui.controllers.routes.ClericalToolController.showQueryWithInput(input, filter, Some(1), Some(-1), historical))
   }
 
-  def showQueryWithInput(input: String, filter: String, page: Option[Int], expand: Option[Int]): Action[AnyContent] = Action.async { implicit request =>
+  def showQueryWithInput(input: String, filter: String, page: Option[Int], expand: Option[Int], historical: Boolean): Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
       apiClient.showQuery(input, filter, apiKey).flatMap{ query =>
@@ -475,6 +479,7 @@ class ClericalToolController @Inject()(
             AddressIndexSearchRequest(
               input = addressText,
               filter = filterText,
+              historical = historical,
               limit = limit,
               rangekm = "",
               lat = "50.705948",
