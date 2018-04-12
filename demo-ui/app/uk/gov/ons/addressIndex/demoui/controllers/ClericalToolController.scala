@@ -349,7 +349,7 @@ class ClericalToolController @Inject()(
     * @param input
     * @return result to view
     */
-  def doGetResultClerical(input : String) : Action[AnyContent] = Action.async { implicit request =>
+  def doGetResultClerical(input : String, historical: Boolean) : Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>
       //   logger info("UPRN with supplied input address " + input)
@@ -359,7 +359,8 @@ class ClericalToolController @Inject()(
         AddressIndexUPRNRequest(
           uprn = numericUPRN,
           id = UUID.randomUUID,
-          apiKey = apiKey
+          apiKey = apiKey,
+          historical = historical
         )
       ) map { resp: AddressByUprnResponseContainer =>
         val filledForm = SingleMatchController.form.fill(SingleSearchForm(input.toString,""))

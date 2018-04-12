@@ -258,6 +258,7 @@ class SingleMatchController @Inject()(
         val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.uprnResult(
           singleSearchForm = filledForm,
           filter = None,
+          historical = historical,
           warningMessage = warningMessage,
           addressByUprnResponse = Some(resp.response),
           classification = Some(classCodes),
