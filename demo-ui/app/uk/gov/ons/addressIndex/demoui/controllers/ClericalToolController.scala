@@ -63,6 +63,7 @@ class ClericalToolController @Inject()(
       warningMessage = None,
       query = "",
       filter = "",
+      historical = false,
       pageNum = 1,
       pageSize = pageSize,
       pageMax = maxPages,
@@ -101,6 +102,7 @@ class ClericalToolController @Inject()(
         warningMessage = Some(messagesApi("single.pleasesupply")),
         query = "",
         filter = "",
+        historical = historical,
         pageNum = 1,
         pageSize = pageSize,
         pageMax = maxPages,
@@ -149,6 +151,7 @@ class ClericalToolController @Inject()(
           warningMessage = Some(messagesApi("single.pleasesupply")),
           query = "",
           filter = "",
+          historical = historical,
           pageNum = 1,
           pageSize = pageSize,
           pageMax = maxPages,
@@ -183,7 +186,7 @@ class ClericalToolController @Inject()(
             apiKey = apiKey
           )
         ) map { resp: AddressBySearchResponseContainer =>
-          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText, filterText))
+          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText, filterText, historical))
 
           val nags = resp.response.addresses.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -201,6 +204,7 @@ class ClericalToolController @Inject()(
             warningMessage = warningMessage,
             query = "",
             filter = "",
+            historical = historical,
             pageNum = pageNum,
             pageSize = pageSize,
             pageMax = maxPages,
@@ -314,7 +318,7 @@ class ClericalToolController @Inject()(
           apiKey = apiKey
         )
       ) map { resp: AddressByUprnResponseContainer =>
-        val filledForm = SingleMatchController.form.fill(SingleSearchForm(input.toString, filter.toString))
+        val filledForm = SingleMatchController.form.fill(SingleSearchForm(input.toString, filter.toString, historical))
 
         val nags = resp.response.address.flatMap(_.nag)
         val classCodes: Map[String, String] = nags.map(nag =>
@@ -328,6 +332,7 @@ class ClericalToolController @Inject()(
         val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.uprnResult(
           singleSearchForm = filledForm,
           filter = None,
+          historical = historical,
           warningMessage = warningMessage,
           addressByUprnResponse = Some(resp.response),
           classification = Some(classCodes),
@@ -363,7 +368,7 @@ class ClericalToolController @Inject()(
           historical = historical
         )
       ) map { resp: AddressByUprnResponseContainer =>
-        val filledForm = SingleMatchController.form.fill(SingleSearchForm(input.toString,""))
+        val filledForm = SingleMatchController.form.fill(SingleSearchForm(input.toString,"", historical))
 
         val nags = resp.response.address.flatMap(_.nag)
         val classCodes: Map[String, String] = nags.map(nag =>
@@ -404,6 +409,7 @@ class ClericalToolController @Inject()(
       warningMessage = None,
       query = "",
       filter = "",
+      historical = false,
       pageNum = 1,
       pageSize = pageSize,
       pageMax = maxPages,
@@ -456,6 +462,7 @@ class ClericalToolController @Inject()(
             warningMessage = Some(messagesApi("single.pleasesupply")),
             query = "",
             filter = filterText,
+            historical = historical,
             pageNum = 1,
             pageSize = pageSize,
             pageMax = maxPages,
@@ -490,7 +497,7 @@ class ClericalToolController @Inject()(
               apiKey = apiKey
             )
           ) map { resp: AddressBySearchResponseContainer =>
-            val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText, filterText))
+            val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText, filterText, historical))
 
             val nags = resp.response.addresses.flatMap(_.nag)
             val classCodes: Map[String, String] = nags.map(nag =>
@@ -508,6 +515,7 @@ class ClericalToolController @Inject()(
               warningMessage = warningMessage,
               query = query,
               filter = filterText,
+              historical = historical,
               pageNum = pageNum,
               pageSize = pageSize,
               pageMax = maxPages,
@@ -535,7 +543,8 @@ object ClericalToolController {
   val form = Form(
     mapping(
       "address" -> text,
-      "filter" -> text
+      "filter" -> text,
+      "historical" -> boolean
     )(SingleSearchForm.apply)(SingleSearchForm.unapply)
   )
 }

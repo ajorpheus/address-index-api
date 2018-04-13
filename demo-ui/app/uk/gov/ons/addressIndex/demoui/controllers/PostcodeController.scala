@@ -57,6 +57,7 @@ class PostcodeController @Inject()(
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.postcodeSearch(
         postcodeSearchForm = PostcodeController.form,
         filter = None,
+        historical = false,
         warningMessage = None,
         pageNum = 1,
         pageSize = pageSize,
@@ -88,6 +89,7 @@ class PostcodeController @Inject()(
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.postcodeMatch(
         postcodeSearchForm = PostcodeController.form,
         filter = None,
+        historical = historical,
         warningMessage = Some(messagesApi("postcode.pleasesupply")),
         pageNum = 1,
         pageSize = pageSize,
@@ -126,6 +128,7 @@ class PostcodeController @Inject()(
         val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.postcodeMatch(
           postcodeSearchForm = PostcodeController.form,
           filter = None,
+          historical = historical,
           warningMessage = Some(messagesApi("postcode.pleasesupply")),
           pageNum = 1,
           pageSize = pageSize,
@@ -150,7 +153,7 @@ class PostcodeController @Inject()(
             apiKey = apiKey
           )
         } map { resp: AddressByPostcodeResponseContainer =>
-          val filledForm = PostcodeController.form.fill(PostcodeSearchForm(addressText,filterText))
+          val filledForm = PostcodeController.form.fill(PostcodeSearchForm(addressText,filterText, historical))
 
           val nags = resp.response.addresses.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -164,6 +167,7 @@ class PostcodeController @Inject()(
           val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.postcodeMatch(
             postcodeSearchForm = filledForm,
             filter = None,
+            historical = historical,
             warningMessage = warningMessage,
             pageNum = pageNum,
             pageSize = pageSize,
@@ -186,7 +190,8 @@ object PostcodeController {
   val form = Form(
     mapping(
       "address" -> text,
-      "filter" -> text
+      "filter" -> text,
+      "historical" -> boolean
     )(PostcodeSearchForm.apply)(PostcodeSearchForm.unapply)
   )
 }

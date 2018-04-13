@@ -57,6 +57,7 @@ class RadiusController @Inject()(
       val viewToRender = uk.gov.ons.addressIndex.demoui.views.html.radiusSearch(
         radiusSearchForm = RadiusController.form,
         filter = None,
+        historical = false,
         rangekm = None,
         lat = None,
         lon = None,
@@ -100,6 +101,7 @@ class RadiusController @Inject()(
         rangekm = None,
         lat = None,
         lon = None,
+        historical = historical,
         warningMessage = Some(messagesApi("radius.pleasesupply")),
         pageNum = 1,
         pageSize = pageSize,
@@ -144,6 +146,7 @@ class RadiusController @Inject()(
           rangekm = None,
           lat = None,
           lon = None,
+          historical = historical,
           warningMessage = Some(messagesApi("single.pleasesupply")),
           pageNum = 1,
           pageSize = pageSize,
@@ -171,7 +174,7 @@ class RadiusController @Inject()(
             apiKey = apiKey
           )
         ) map { resp: AddressBySearchResponseContainer =>
-          val filledForm = RadiusController.form.fill(RadiusSearchForm(addressText,filterText,rangeString,latString,lonString))
+          val filledForm = RadiusController.form.fill(RadiusSearchForm(addressText,filterText,rangeString,latString,lonString, historical))
 
           val nags = resp.response.addresses.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -188,6 +191,7 @@ class RadiusController @Inject()(
             rangekm = rangekm,
             lat = lat,
             lon = lon,
+            historical = historical,
             warningMessage = warningMessage,
             pageNum = pageNum,
             pageSize = pageSize,
@@ -213,7 +217,8 @@ object RadiusController {
       "filter" -> text,
       "rangekm" -> text,
       "lat" -> text,
-      "lon" -> text
+      "lon" -> text,
+      "historical" -> boolean
     )(RadiusSearchForm.apply)(RadiusSearchForm.unapply)
   )
 }

@@ -98,6 +98,7 @@ class SingleMatchController @Inject()(
         rangekm = None,
         lat = None,
         lon = None,
+        historical = historical,
         warningMessage = Some(messagesApi("single.pleasesupply")),
         pageNum = 1,
         pageSize = pageSize,
@@ -146,6 +147,7 @@ class SingleMatchController @Inject()(
           rangekm = None,
           lat = None,
           lon = None,
+          historical = historical,
           warningMessage = Some(messagesApi("single.pleasesupply")),
           pageNum = 1,
           pageSize = pageSize,
@@ -173,7 +175,7 @@ class SingleMatchController @Inject()(
             apiKey = apiKey
           )
         ) map { resp: AddressBySearchResponseContainer =>
-          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText))
+          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText, historical))
 
           val nags = resp.response.addresses.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -190,6 +192,7 @@ class SingleMatchController @Inject()(
           rangekm = rangekm,
           lat = lat,
           lon = lon,
+          historical = historical,
           warningMessage = warningMessage,
           pageNum = pageNum,
           pageSize = pageSize,
@@ -223,6 +226,7 @@ class SingleMatchController @Inject()(
         rangekm = None,
         lat = None,
         lon = None,
+        historical = historical,
         warningMessage = Some(messagesApi("single.pleasesupply")),
         pageNum = 1,
         pageSize = pageSize,
@@ -244,7 +248,7 @@ class SingleMatchController @Inject()(
             apiKey = apiKey
         )
       ) map { resp: AddressByUprnResponseContainer =>
-        val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText))
+        val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText, historical))
 
           val nags = resp.response.address.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -294,6 +298,7 @@ class SingleMatchController @Inject()(
           rangekm = None,
           lat = None,
           lon = None,
+          historical = historical,
           pageSize = pageSize,
           pageMax = maxPages,
           addressBySearchResponse = None,
@@ -313,7 +318,7 @@ class SingleMatchController @Inject()(
             historical = historical
           )
         ) map { resp: AddressByUprnResponseContainer =>
-          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText))
+          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText, historical))
 
           val nags = resp.response.address.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -349,7 +354,7 @@ class SingleMatchController @Inject()(
     * @param input
     * @return result to view
     */
-  def doGetResultClerical(input : String) : Action[AnyContent] = Action.async { implicit request =>
+  def doGetResultClerical(input : String, historical: Boolean) : Action[AnyContent] = Action.async { implicit request =>
     val refererUrl = request.uri
     request.session.get("api-key").map { apiKey =>val addressText = StringUtils.stripAccents(input)
       val filterText = ""
@@ -363,6 +368,7 @@ class SingleMatchController @Inject()(
           rangekm = None,
           lat = None,
           lon = None,
+          historical = historical,
           pageSize = pageSize,
           pageMax = maxPages,
           addressBySearchResponse = None,
@@ -378,10 +384,11 @@ class SingleMatchController @Inject()(
           AddressIndexUPRNRequest(
             uprn = numericUPRN,
             id = UUID.randomUUID,
-            apiKey = apiKey
+            apiKey = apiKey,
+            historical = historical
           )
         ) map { resp: AddressByUprnResponseContainer =>
-          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText))
+          val filledForm = SingleMatchController.form.fill(SingleSearchForm(addressText,filterText, historical))
 
           val nags = resp.response.address.flatMap(_.nag)
           val classCodes: Map[String, String] = nags.map(nag =>
@@ -418,7 +425,8 @@ object SingleMatchController {
   val form = Form(
     mapping(
       "address" -> text,
-      "filter" -> text
+      "filter" -> text,
+      "historical" -> boolean
     )(SingleSearchForm.apply)(SingleSearchForm.unapply)
   )
 }

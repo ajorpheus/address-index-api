@@ -8,6 +8,7 @@ filter: Option[String],
 rangekm: Option[String],
 lat: Option[String],
 lon: Option[String],
+historical: Boolean,
 warningMessage : Option[String],
 pageNum: Int,
 pageSize: Int,
@@ -65,11 +66,12 @@ version: DemoUIAddressIndexVersionModule
                     @addressShortForm(
                     address,
                     radiusSearchForm("filter").value.getOrElse(""),
+                    radiusSearchForm("historical").value,
                     aresponse.maxScore,
                     classification
                     )
                     }
-                    @pager(pageNum,pageSize,pageMax,radiusSearchForm("address").value.getOrElse(""),radiusSearchForm("filter").value.getOrElse(""),aresponse.total, "radius")
+                    @pager(pageNum,pageSize,pageMax,radiusSearchForm("address").value.getOrElse(""),radiusSearchForm("filter").value.getOrElse(""),aresponse.total, "radius", radiusSearchForm("historical").value)
                     }
                 </div>
             </section>

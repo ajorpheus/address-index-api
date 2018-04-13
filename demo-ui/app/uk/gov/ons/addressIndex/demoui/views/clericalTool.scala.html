@@ -84,6 +84,7 @@ apiKey: String
                         @addressShortForm(
                         address,
                         singleSearchForm("filter").value.getOrElse(""),
+                        singleSearchForm("historical").value,
                         aresponse.maxScore,
                         classification,
                         aresponse.tokens,
@@ -96,7 +97,7 @@ apiKey: String
                         )
 
                         }
-                        @pager(pageNum,pageSize,pageMax,singleSearchForm("address").value.getOrElse(""),singleSearchForm("filter").value.getOrElse(""),aresponse.total, pagerAction)
+                        @pager(pageNum,pageSize,pageMax,singleSearchForm("address").value.getOrElse(""),singleSearchForm("filter").value.getOrElse(""),aresponse.total, pagerAction, singleSearchForm("historical").value)
 
                     </div>
                 </section>

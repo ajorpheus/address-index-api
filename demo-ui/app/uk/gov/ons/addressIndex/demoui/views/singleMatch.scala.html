@@ -65,11 +65,12 @@ version: DemoUIAddressIndexVersionModule
                         @addressShortForm(
                         address,
                         singleSearchForm("filter").value.getOrElse(""),
+                        singleSearchForm("historical").value.getOrElse(true).asInstanceOf[Boolean],
                         aresponse.maxScore,
                         classification
                         )
                         }
-                        @pager(pageNum,pageSize,pageMax,singleSearchForm("address").value.getOrElse(""),singleSearchForm("filter").value.getOrElse(""),aresponse.total, "single", rangekm, lat, lon)
+                        @pager(pageNum,pageSize,pageMax,singleSearchForm("address").value.getOrElse(""),singleSearchForm("filter").value.getOrElse(""),aresponse.total, "single", rangekm, lat, lon, singleSearchForm("historical").value.getOrElse(true).asInstanceOf[Boolean])
                         }
                     </div>
                 </section>
