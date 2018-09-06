@@ -236,6 +236,7 @@ case class ApiConfig(
   ajaxHost: String,
   ajaxPort: String,
   gatewayPath: String,
+  ajaxGatewayPath: String,
   apidocs: String,
   swaggerui: String
 )
